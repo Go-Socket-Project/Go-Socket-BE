@@ -1,2 +1,6 @@
 # Go-Socket-BE
-Django Chatting Server
+
+pip install
+```
+
+```
