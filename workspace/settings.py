@@ -51,20 +51,21 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',  # 인증 미들웨어
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 # Allow all domains to access your API
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = "workspace.urls"
+
+# AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 
 TEMPLATES = [
     {
@@ -114,6 +115,25 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    # 각 요청에 대한 허용/거부
+    # 등록 된 사용자 만 API에 액세스 할 수 있도록
+    # 인증 된 사용자에 대한 액세스를 허용하고 인증되지 않은 사용자에 대한 액세스를 거부하는걸
+    # DEFAULT_PERMISSION_CLASSES 설정을 사용하여 전체적으로 설정
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    # 유저 식별
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+# make CustomUser the default user for Django authentication
+AUTH_USER_MODEL = 'account.User'
+# tell Django to use EmailBackend as the default authentication backend
+# AUTHENTICATION_BACKENDS = ['account.auth_backends.EmailBackend']
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -137,4 +157,5 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+APPEND_SLASH = False
 APPEND_SLASH = False
