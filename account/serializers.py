@@ -21,6 +21,6 @@ class UserLoginSerializer(serializers.Serializer):
     def validate(self, data):
         user = authenticate(email=data['email'], password=data['password'])
         if user:
-            return user
+            return {'user': user}  # 사용자 객체를 딕셔너리 형태로 반환
         raise serializers.ValidationError("Unable to log in with provided credentials.")
         return user
