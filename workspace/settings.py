@@ -34,12 +34,16 @@ INSTALLED_APPS = [
 
     # install app
     "account",
+    "chat",
 
     # cors install
     'corsheaders',
 
     # drf install
     "rest_framework",
+
+    # channels install
+    "channels",
 
 
     "django.contrib.admin",
