@@ -5,6 +5,7 @@ from account.serializers import UserRegistrationSerializer, UserLoginSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.http import HttpResponse
 
 @method_decorator(csrf_exempt, name='dispatch')
 class SignupView(APIView):
@@ -32,3 +33,4 @@ class LoginView(APIView):
                 'message': "User logged in successfully"
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 
     # channels install
     "channels",
+    'daphne',
 
 
     "django.contrib.admin",
@@ -91,7 +92,7 @@ CORS_ORIGIN_WHITELIST = (
     "http://127.0.0.1:8080",
 )
 
-CORS_ALLOW_HEADERS = ( # <-실제 요청을 할 때 사용될 수 있는 non-standard HTTP 헤더 목록// 현재 기본값
+CORS_ALLOW_HEADERS = ( # <-실제 요을 할 때 사용될 수 있는 non-standard HTTP 헤더 목록// 현재 기본값
     'accept',
     'accept-encoding',
     'authorization',
@@ -114,7 +115,16 @@ SIMPLE_JWT = {
 
 ROOT_URLCONF = "workspace.urls"
 
-# AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
+
 
 TEMPLATES = [
     {
@@ -133,6 +143,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "workspace.wsgi.application"
+ASGI_APPLICATION = 'workspace.asgi.application'
 
 
 # Database
