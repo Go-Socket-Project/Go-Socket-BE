@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sites', #추가
 
     # install app
-    'user_auth'
+    'user_auth',
 
     #allauth #추가
     'allauth',
@@ -194,16 +194,21 @@ REST_FRAMEWORK = {
     # 유저 식별
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication'
     ),
 }
 
 # make CustomUser the default user for Django authentication
-# AUTH_USER_MODEL = 'account.User'
+AUTH_USER_MODEL = 'user_auth.User'
 # tell Django to use EmailBackend as the default authentication backend
 AUTHENTICATION_BACKENDS = (
     #Needed to login by username in Django admin, regardless of 'allauth'
     'django.contrib.auth.backends.ModelBackend',   
 )
+
+# settings.py
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
@@ -241,3 +246,10 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Disable email verification
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+# Email backend
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
