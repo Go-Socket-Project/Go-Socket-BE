@@ -202,16 +202,16 @@ REST_FRAMEWORK = {
 # make CustomUser the default user for Django authentication
 AUTH_USER_MODEL = 'user_auth.User'
 # tell Django to use EmailBackend as the default authentication backend
-AUTHENTICATION_BACKENDS = (
-    #Needed to login by username in Django admin, regardless of 'allauth'
-    'django.contrib.auth.backends.ModelBackend',   
-)
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 # settings.py
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 
 SITE_ID = 1
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/home/'
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
