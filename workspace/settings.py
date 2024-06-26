@@ -37,19 +37,30 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    'daphne',  # Move Daphne before staticfiles
     "django.contrib.staticfiles",
+    'django.contrib.sites', #추가
 
     # install app
+    'user_auth',
 
-    # cors install
+    #allauth #추가
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    #provider #추가
+    'allauth.socialaccount.providers.google',
+
+    # Install Library
     'corsheaders',
 
-    # drf install
-    "rest_framework",
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
 
-    # channels install
     "channels",
-    'daphne',
 ]
 
 MIDDLEWARE = [
@@ -62,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',  # 인증 미들웨어
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Add this line
 ]
 
 # Allow all domains to access your API
@@ -182,14 +194,36 @@ REST_FRAMEWORK = {
     # 유저 식별
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication'
     ),
 }
 
 # make CustomUser the default user for Django authentication
-AUTH_USER_MODEL = 'account.User'
+AUTH_USER_MODEL = 'user_auth.User'
 # tell Django to use EmailBackend as the default authentication backend
-# AUTHENTICATION_BACKENDS = ['account.auth_backends.EmailBackend']
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
+# settings.py
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+
+SITE_ID = 1
+LOGIN_REDIRECT_URL = '/home/'
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -212,3 +246,10 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Disable email verification
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+# Email backend
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
