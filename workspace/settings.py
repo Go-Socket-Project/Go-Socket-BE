@@ -167,14 +167,14 @@ DATABASES = {
 if "CHANNEL_LAYER_REDIS_URL" in env:
     channels_layer_redis = env.db_url("CHANNEL_LAYER_REDIS_URL")
     CHANNEL_LAYERS = {
-        "default":{
+        "default": {
             'BACKEND': 'channels.layers.InMemoryChannelLayer',
-            "CONFIG":{
-                "host":[
+            "CONFIG": {
+                "hosts": [  # 수정: "hosts" -> "host"
                     {
-                        "host" : channels_layer_redis["HOST"],
-                        "prot" : channels_layer_redis.get("PORT") or 6379,
-                        "password" : channels_layer_redis["PASSWORD"],
+                        "host": channels_layer_redis["HOST"],
+                        "port": channels_layer_redis.get("PORT") or 6379,
+                        "password": channels_layer_redis["PASSWORD"],
                     }
                 ]
             }
@@ -201,7 +201,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     # 각 요청에 대한 허용/거부
-    # 등록 된 사용자 만 API에 액세스 할 수 있도��
+    # 등록 된 사용자 만 API에 액세스 할 수 있도
     # 인증 된 사용자에 대한 액세스를 허용하고 인증되지 않은 사용자에 대한 액세스를 거부하는걸
     # DEFAULT_PERMISSION_CLASSES 설정을 사용하여 전체적으로 설정
     'DEFAULT_PERMISSION_CLASSES': (
@@ -269,4 +269,5 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 # Email backend
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
