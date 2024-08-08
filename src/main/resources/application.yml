@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: Go-Socket-BE
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+server:
+  port: ${PORT}
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
