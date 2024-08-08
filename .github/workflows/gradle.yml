@@ -1,4 +1,4 @@
-name: Build Test
+name: Go Socket BE
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Cache Gradle packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
