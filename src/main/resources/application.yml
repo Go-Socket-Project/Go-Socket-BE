@@ -1,6 +1,19 @@
 spring:
   application:
     name: Go-Socket-BE
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+  config:
+    import:
+      - optional:classpath:/yaml/application-local.yml  
+        - optional:classpath:/yaml/logging/application-logging.yml
+  jpa:
+    hibernate:
+      ddl-auto: validate  # 운영 환경 고려
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
 
 server:
   port: 8080
