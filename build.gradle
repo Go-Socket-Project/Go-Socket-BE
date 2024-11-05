@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.3.2'
-    id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.springframework.boot' version '3.3.4'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
 
 group = 'com.mycom.socket'
@@ -10,6 +10,21 @@ version = '0.0.1-SNAPSHOT'
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+bootRun {
+    String activeProfile = System.properties['spring.profiles.active']
+    systemProperty "spring.profiles.active", activeProfile
+
+    systemProperty "spring.config.location", "classpath:/application.yml,classpath:/yaml/"
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/resources"]
+        }
     }
 }
 
@@ -24,14 +39,23 @@ repositories {
 }
 
 dependencies {
+    // 웹
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // JPA & DB
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
 }
 
-test{
+test {
     useJUnitPlatform()
 }
