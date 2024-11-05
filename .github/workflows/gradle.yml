@@ -29,6 +29,8 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: Build with Gradle
+        env:
+          SPRING_PROFILES_ACTIVE: test
         run: ./gradlew clean build
 
       - name: Backend CI Discord Notification (Success)
