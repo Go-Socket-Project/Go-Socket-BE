@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @MappedSuperclass
-public class SoftDeleteEntity extends BaseEntity {
+public abstract class SoftDeleteEntity extends BaseEntity {
 
     @Column(nullable = false)
     private boolean isDeleted = false;
