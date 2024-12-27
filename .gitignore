@@ -39,6 +39,4 @@ out/
 .vscode/
 
 ## yml
-./resources/yaml/application-local.yml
-
-./logs/go-socket.log
+application-secret.yml
