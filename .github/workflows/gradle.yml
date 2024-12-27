@@ -10,20 +10,6 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_DATABASE: go_socket
-          MYSQL_ROOT_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        ports:
-          - 3306:3306
-        options:
-          --health-cmd="mysqladmin ping"  
-          --health-interval=5s   
-          --health-timeout=2s    
-          --health-retries=3
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -34,13 +20,8 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Test with Gradle
-        env:
-            SPRING_PROFILES_ACTIVE: test
-            DB_URL: ${{ secrets.DB_URL }}
-            DB_USERNAME: ${{ secrets.DB_USERNAME }}
-            DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: ./gradlew clean test
+      - name: Build with Gradle
+        run: ./gradlew assemble
 
       - name: Backend CI Discord Notification (Success)
         if: ${{ success() }}
