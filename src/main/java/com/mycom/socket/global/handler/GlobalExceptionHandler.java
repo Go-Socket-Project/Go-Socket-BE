@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
 
     // 그 밖의 예외 처리
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity<ApiResponse<Object>> handleException(Exception e) {
+    protected ResponseEntity<ApiResponse<?>> handleException(Exception e) {
         log.error("Internal Server Error", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
