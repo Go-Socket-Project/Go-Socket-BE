@@ -10,6 +10,20 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: go_socket
+          MYSQL_ROOT_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        ports:
+          - 3306:3306
+        options:
+          --health-cmd="mysqladmin ping"  
+          --health-interval=5s   
+          --health-timeout=2s    
+          --health-retries=3
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
