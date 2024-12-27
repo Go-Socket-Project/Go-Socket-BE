@@ -1,4 +1,4 @@
-package com.mycom.socket.global.domain;
+package com.mycom.socket.global.common;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;

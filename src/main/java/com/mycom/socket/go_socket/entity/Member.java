@@ -1,7 +1,7 @@
-package com.mycom.socket.member.domain;
+package com.mycom.socket.go_socket.entity;
 
-import com.mycom.socket.global.domain.BaseEntity;
-import com.mycom.socket.member.domain.type.MemberRole;
+import com.mycom.socket.global.common.BaseEntity;
+import com.mycom.socket.go_socket.entity.enums.MemberRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
