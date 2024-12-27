@@ -1,4 +1,4 @@
-package com.mycom.socket.member.domain.type;
+package com.mycom.socket.go_socket.entity.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
