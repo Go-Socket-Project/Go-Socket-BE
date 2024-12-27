@@ -21,12 +21,9 @@ jobs:
           distribution: 'temurin'
 
       - name: Test with Gradle
-        run: ./gradlew clean test
-
-      - name: Build with Gradle
         env:
-          SPRING_PROFILES_ACTIVE: test
-        run: ./gradlew clean build
+            SPRING_PROFILES_ACTIVE: test
+        run: ./gradlew clean test
 
       - name: Backend CI Discord Notification (Success)
         if: ${{ success() }}
