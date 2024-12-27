@@ -23,7 +23,7 @@ bootRun {
 sourceSets {
     main {
         resources {
-            srcDirs = ["src/main/resources"]
+            srcDirs = ["src/main/resources", "src/main/resources/yaml"]
         }
     }
 }
@@ -53,7 +53,6 @@ dependencies {
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'com.h2database:h2'
 
     // Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
