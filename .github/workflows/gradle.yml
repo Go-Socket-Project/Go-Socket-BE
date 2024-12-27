@@ -23,6 +23,9 @@ jobs:
       - name: Test with Gradle
         env:
             SPRING_PROFILES_ACTIVE: test
+            DB_URL: ${{ secrets.DB_URL }}
+            DB_USERNAME: ${{ secrets.DB_USERNAME }}
+            DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: ./gradlew clean test
 
       - name: Backend CI Discord Notification (Success)
