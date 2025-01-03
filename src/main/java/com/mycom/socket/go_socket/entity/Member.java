@@ -4,6 +4,7 @@ import com.mycom.socket.global.common.BaseEntity;
 import com.mycom.socket.go_socket.entity.enums.MemberRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,7 +19,7 @@ public class Member extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
-    private long id;
+    private Long id;
 
     @Column(unique = true)
     private String email;
@@ -36,6 +37,15 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberFriend> friends;
+
+    @Builder
+    public Member(String email, String nickname, String password, String intro, MemberRole role) {
+        this.email = email;
+        this.nickname = nickname;
+        this.password = password;
+        this.intro = intro;
+        this.role = role;
+    }
 
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;

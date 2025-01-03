@@ -53,6 +53,8 @@ dependencies {
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.assertj:assertj-core'
 
     // Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
