@@ -1,5 +1,6 @@
 package com.mycom.socket.go_socket.entity;
 
+import com.mycom.socket.global.common.BaseEntity;
 import com.mycom.socket.go_socket.entity.enums.FriendStatus;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-public class MemberFriend {
+public class MemberFriend extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
