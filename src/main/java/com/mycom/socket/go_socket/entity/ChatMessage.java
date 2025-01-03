@@ -36,9 +36,6 @@ public class ChatMessage extends SoftDeleteEntity {
 
     private String imageUrl;    // 이미지 메시지의 경우
 
-    @Column(name = "is_deleted")
-    private boolean deleted = false;
-
     @Builder
     public ChatMessage(ChatRoom chatRoom, Member sender, MessageType type,
                        String content, String imageUrl) {
