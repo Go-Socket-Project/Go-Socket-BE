@@ -24,8 +24,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
-    private static final String BEARER_TOKEN_PREFIX = "Bearer";
-
     private final JWTUtil jwtUtil;  // JwtProvider 대신 JWTUtil 사용
     private final AuthenticationManager authenticationManager;
     private final ObjectMapper objectMapper;

@@ -21,8 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AuthService {
 
-    private static final String BEARER_TOKEN_PREFIX = "Bearer";
-
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;

@@ -14,7 +14,6 @@ import java.util.Date;
 public class JWTUtil {
 
     private final SecretKey secretKey;
-    private final long accessTokenValidityInMilliseconds = 1000 * 60 * 30; // 30분
 
     public JWTUtil(@Value("${jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
@@ -23,6 +22,8 @@ public class JWTUtil {
     public String createToken(String email) {
         Claims claims = Jwts.claims().subject(email).build();
         Date now = new Date();
+        // 30분
+        long accessTokenValidityInMilliseconds = 1000 * 60 * 30;
         Date validity = new Date(now.getTime() + accessTokenValidityInMilliseconds);
 
         return Jwts.builder()

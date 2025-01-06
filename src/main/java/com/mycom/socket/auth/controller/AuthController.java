@@ -4,7 +4,6 @@ import com.mycom.socket.auth.dto.request.LoginRequestDto;
 import com.mycom.socket.auth.dto.request.RegisterRequestDto;
 import com.mycom.socket.auth.dto.response.LoginResponseDto;
 import com.mycom.socket.auth.service.AuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
