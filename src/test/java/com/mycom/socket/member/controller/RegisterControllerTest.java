@@ -2,9 +2,9 @@ package com.mycom.socket.member.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycom.socket.auth.config.SecurityConfig;
-import com.mycom.socket.go_socket.controller.RegisterController;
-import com.mycom.socket.go_socket.dto.request.MemberRegisterDto;
-import com.mycom.socket.go_socket.service.RegisterService;
+import com.mycom.socket.auth.controller.AuthController;
+import com.mycom.socket.auth.dto.request.RegisterRequestDto;
+import com.mycom.socket.auth.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(RegisterController.class)
+@WebMvcTest(AuthController.class)
 @Import(SecurityConfig.class)
 class RegisterControllerTest {
 
@@ -31,19 +31,19 @@ class RegisterControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private RegisterService registerService;
+    private AuthService authService;
 
     @Test
     @WithMockUser
     void 회원가입_성공() throws Exception {
         // given
-        MemberRegisterDto request = new MemberRegisterDto(
+        RegisterRequestDto request = new RegisterRequestDto(
                 "test@example.com",
                 "testUser",
                 "password123",
                 "안녕하세요"
         );
-        given(registerService.register(any(MemberRegisterDto.class)))
+        given(authService.register(any(RegisterRequestDto.class)))
                 .willReturn(1L);
 
         // when & then
@@ -60,7 +60,7 @@ class RegisterControllerTest {
     @WithMockUser
     void 회원가입_실패_잘못된_입력값() throws Exception {
         // given
-        MemberRegisterDto request = new MemberRegisterDto(
+        RegisterRequestDto request = new RegisterRequestDto(
                 "invalid-email",
                 "t",
                 "123",
