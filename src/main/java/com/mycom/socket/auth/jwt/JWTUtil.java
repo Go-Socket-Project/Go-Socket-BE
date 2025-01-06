@@ -3,6 +3,7 @@ package com.mycom.socket.auth.jwt;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
+@Slf4j
 public class JWTUtil {
 
     private final SecretKey secretKey;
@@ -42,6 +44,7 @@ public class JWTUtil {
                     .parseSignedClaims(token);
             return true;
         } catch (Exception e) {
+            log.warn("JWT 토큰 검증 중 에러 발생: {}", e.getMessage());
             return false;
         }
     }

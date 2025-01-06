@@ -44,22 +44,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         }
     }
 
-    @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException {
         MemberDetails memberDetails = (MemberDetails) authResult.getPrincipal();
         Member member = memberDetails.getMember();
 
-        // JWT 토큰 생성
         String token = jwtUtil.createToken(member.getEmail());
 
         // HTTP Only 쿠키에 JWT 토큰 저장
         Cookie cookie = new Cookie("Authorization", token);
-        cookie.setHttpOnly(true);  // JavaScript에서 접근 불가능하게 설정
-        cookie.setSecure(true);    // HTTPS에서만 전송되도록 설정
-        cookie.setPath("/");       // 모든 경로에서 쿠키 접근 가능
-        cookie.setMaxAge(1800);    // 쿠키 만료시간 30분
-        response.addCookie(cookie);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(1800);        // 쿠키 만료시간 30분
+
+        // SameSite 속성 설정 추가
+        response.setHeader("Set-Cookie",
+                String.format("Authorization=%s; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=1800", token));
 
         LoginResponseDto loginResponse = new LoginResponseDto(
                 member.getEmail(),
