@@ -1,10 +1,9 @@
 package com.mycom.socket.member.service;
 
-import com.mycom.socket.global.exception.ConflictException;
-import com.mycom.socket.go_socket.dto.request.MemberRegisterDto;
+import com.mycom.socket.auth.dto.request.RegisterRequestDto;
+import com.mycom.socket.auth.service.AuthService;
 import com.mycom.socket.go_socket.entity.Member;
 import com.mycom.socket.go_socket.repository.MemberRepository;
-import com.mycom.socket.go_socket.service.RegisterService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,7 +22,7 @@ import static org.mockito.Mockito.verify;
 class RegisterServiceTest {
 
     @InjectMocks
-    private RegisterService registerService;
+    private AuthService authService;
 
     @Mock
     private MemberRepository memberRepository;
@@ -34,7 +33,7 @@ class RegisterServiceTest {
     @Test
     void 회원가입_성공() {
         // given
-        MemberRegisterDto request = new MemberRegisterDto(
+        RegisterRequestDto request = new RegisterRequestDto(
                 "test@example.com",
                 "testUser",
                 "password123",
@@ -58,7 +57,7 @@ class RegisterServiceTest {
         given(memberRepository.save(any(Member.class))).willReturn(savedMember);
 
         // when
-        Long memberId = registerService.register(request);
+        Long memberId = authService.register(request);
 
         // then
         assertThat(memberId).isEqualTo(1L);
