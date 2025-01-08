@@ -39,7 +39,7 @@ public class AuthController {
     }
 
     @PostMapping("/email/verification")
-    public Integer mailSend(@RequestParam(name = "mail") String mail) {
+    public Boolean mailSend(@RequestParam(name = "mail") String mail) {
         try {
             rateLimiter.checkRateLimit(mail);  // 요청 제한 체크
             return mailService.sendMail(mail);
