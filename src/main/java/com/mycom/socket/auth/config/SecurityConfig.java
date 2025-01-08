@@ -1,6 +1,7 @@
 package com.mycom.socket.auth.config;
 
 import com.mycom.socket.auth.jwt.JWTFilter;
+import com.mycom.socket.auth.jwt.JWTProperties;
 import com.mycom.socket.auth.jwt.JWTUtil;
 import com.mycom.socket.auth.service.MemberDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 public class SecurityConfig{
 
     private final JWTUtil jwtUtil;
+    private final JWTProperties properties;
     private final MemberDetailsService memberDetailsService;
 
     @Bean
@@ -30,7 +32,10 @@ public class SecurityConfig{
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
 
-                .addFilterBefore(new JWTFilter(jwtUtil, memberDetailsService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(
+                        new JWTFilter(properties, jwtUtil, memberDetailsService),
+                        UsernamePasswordAuthenticationFilter.class
+                )
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
