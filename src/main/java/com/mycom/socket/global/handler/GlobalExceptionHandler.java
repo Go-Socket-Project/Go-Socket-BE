@@ -8,12 +8,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+
 
     // 비지니스 예외 처리
     @ExceptionHandler(BaseException.class)
@@ -40,12 +44,21 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(errorMessage));
     }
 
-    // 그 밖의 예외 처리
+   // 일반적인 예외 처리 (IllegalArgumentException, NoSuchElementException 등)
+    @ExceptionHandler({IllegalArgumentException.class, NoSuchElementException.class, NoResourceFoundException.class})
+    protected ResponseEntity<ApiResponse<?>> handleCommonException(Exception e) {
+        HttpStatus status = (e instanceof NoResourceFoundException) ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
+        log.error("Common Exception : {}", e.getMessage());
+        return ResponseEntity
+                .status(status)
+                .body(ApiResponse.error(e.getMessage()));
+    }
+    // 모든 예외 처리 (최후의 보루)
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity<ApiResponse<?>> handleException(Exception e) {
+    protected ResponseEntity<ApiResponse<?>> handleAllException(Exception e) {
         log.error("Internal Server Error", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("서버 내부 오류가 발생했습니다"));
+                .body(ApiResponse.error(e.getMessage() != null ? e.getMessage() : "서버 내부 오류가 발생했습니다."));
     }
 }
