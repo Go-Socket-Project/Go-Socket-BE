@@ -35,7 +35,11 @@ public class RateLimiter {
                 requestTime.plus(WINDOW_SIZE).isBefore(now));
 
         if (requests.size() >= MAX_REQUESTS) {
-            throw new BaseException("너무 많은 요청입니다. 잠시 후 다시 시도해주세요.", HttpStatus.TOO_MANY_REQUESTS);
+            LocalDateTime oldestRequest = requests.get(0);
+            Duration waitTime = WINDOW_SIZE.minus(Duration.between(oldestRequest, now));
+            throw new BaseException(
+                    String.format("너무 많은 요청입니다. %d초 후에 다시 시도해주세요.",waitTime.getSeconds()),
+                    HttpStatus.TOO_MANY_REQUESTS);
         }
 
         requests.add(now);
