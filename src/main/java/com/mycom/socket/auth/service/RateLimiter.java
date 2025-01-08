@@ -3,6 +3,7 @@ package com.mycom.socket.auth.service;
 import com.mycom.socket.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -18,6 +19,13 @@ public class RateLimiter {
     private final Map<String, List<LocalDateTime>> requestMap = new ConcurrentHashMap<>();
     private static final int MAX_REQUESTS = 3;  // 1분당 최대 3번
     private static final Duration WINDOW_SIZE = Duration.ofMinutes(1);  // 1분의 시간 간격
+
+    @Scheduled(fixedRate = 3600000)  // 1시간마다 실행
+    public void cleanup() {
+        LocalDateTime threshold = LocalDateTime.now().minus(WINDOW_SIZE);
+        requestMap.entrySet().removeIf(entry ->
+                entry.getValue().stream().allMatch(time -> time.isBefore(threshold)));
+    }
 
     public void checkRateLimit(String email) {
         List<LocalDateTime> requests = requestMap.computeIfAbsent(email, k -> new ArrayList<>());
