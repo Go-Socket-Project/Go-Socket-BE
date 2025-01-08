@@ -9,6 +9,7 @@ import com.mycom.socket.auth.dto.response.EmailVerificationResponseDto;
 import com.mycom.socket.auth.dto.response.LoginResponseDto;
 import com.mycom.socket.auth.service.AuthService;
 import com.mycom.socket.auth.service.MailService;
+import com.mycom.socket.auth.service.RateLimiter;
 import com.mycom.socket.global.exception.BaseException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final MailService mailService;
+    private final RateLimiter rateLimiter;
 
     @PostMapping("/login")
     public LoginResponseDto login(@Valid @RequestBody LoginRequestDto request,
@@ -49,13 +51,14 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/email/verify")
+    @PostMapping("/email/verify")
     public EmailVerificationCheckResponseDto mailCheck(@Valid @RequestBody EmailVerificationRequestDto emailRequestDto) {
-        try {
+        try{
+            rateLimiter.checkRateLimit(emailRequestDto.email());// 시도 횟수 제한
             boolean isVerified =  mailService.verifyCode(emailRequestDto.email(), emailRequestDto.code());
             return isVerified ? EmailVerificationCheckResponseDto.createSuccessResponse() :
                     EmailVerificationCheckResponseDto.createFailureResponse("이메일 인증에 실패했습니다.");
-        } catch (BaseException e) {
+        }catch (BaseException e){
             return EmailVerificationCheckResponseDto.createFailureResponse(e.getMessage());
         }
     }

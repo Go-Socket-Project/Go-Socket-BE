@@ -9,7 +9,7 @@ public record EmailVerificationRequestDto(
         @Email(message = "유효하지 않은 이메일 형식입니다.")
         String email,
         @NotEmpty(message = "인증 코드를 입력해주세요.")
-        @Pattern(regexp = "\\d{6}", message = "인증 코드는 6자리 숫자여야 합니다.")
+        @Pattern(regexp = "^[0-9]{6}$", message = "인증 코드는 6자리 숫자여야 합니다.")
         String code
 ) {
 }
