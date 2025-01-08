@@ -14,7 +14,6 @@ import org.springframework.util.StringUtils;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +23,6 @@ public class MailService {
     private final RateLimiter rateLimiter; // 인증 번호 요청 제한
 
     private final Map<String, VerificationData> verificationDataMap = new ConcurrentHashMap<>();
-    private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
 
     @Value("${spring.mail.username}")
     private String senderEmail;
@@ -66,25 +64,11 @@ public class MailService {
     }
 
     /**
-     * 이메일 유효성 검사
-     *
-     * @param email 검사할 이메일 주소
-     * @return 유효한 이메일 주소인지 여부
-     */
-    private boolean isValidEmail(String email) {
-        return StringUtils.hasText(email) && Pattern.matches(EMAIL_REGEX, email);
-    }
-
-    /**
      * 인증메일 발송 및 인증번호 반환
      * @param mail 수신자 이메일 주소
      * @return 생성된 인증번호
      */
     public boolean sendMail(String mail) {
-        if (!isValidEmail(mail)) {
-            throw new BaseException("유효하지 않은 이메일 형식입니다.", HttpStatus.BAD_REQUEST);
-        }
-
         rateLimiter.checkRateLimit(mail);
         String verificationCode = createVerificationCode();
         verificationDataMap.put(mail, new VerificationData(verificationCode));
@@ -105,10 +89,6 @@ public class MailService {
      * @return 인증번호 일치 여부
      */
     public boolean verifyCode(String email, String code) {
-        if (!isValidEmail(email)){
-            throw new BaseException("유효하지 않은 이메일 형식입니다.", HttpStatus.BAD_REQUEST);
-        }
-
         if (!StringUtils.hasText(code) || !code.matches("\\d{6}")) {
             return false;
         }
