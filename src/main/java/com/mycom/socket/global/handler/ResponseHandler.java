@@ -1,6 +1,5 @@
 package com.mycom.socket.global.handler;
 
-import com.mycom.socket.global.dto.ApiResponse;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -24,16 +23,6 @@ public class ResponseHandler implements ResponseBodyAdvice<Object> {
                                   Class<? extends HttpMessageConverter<?>> selectedConverterType,
                                   ServerHttpRequest request,
                                   ServerHttpResponse response) {
-        // null 처리
-        if (body == null) {
-            return ApiResponse.success("Success");
-        }
-
-        // String 타입 처리
-        if (body instanceof String) {
-            return ApiResponse.success("Success", body);
-        }
-
-        return ApiResponse.success("Success", body);
+        return body;
     }
 }

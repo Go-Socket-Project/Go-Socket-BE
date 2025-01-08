@@ -49,10 +49,6 @@ public class AuthService {
         );
     }
 
-    // 이메일 인증 코드 전송
-
-    // 이메일 인증 코드 만료
-
     @Transactional
     public Long register(RegisterRequestDto request) {
         // 이메일 중복 검사
