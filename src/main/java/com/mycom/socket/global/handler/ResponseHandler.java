@@ -1,6 +1,5 @@
 package com.mycom.socket.global.handler;
 
-import com.mycom.socket.global.dto.ApiResponse;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
