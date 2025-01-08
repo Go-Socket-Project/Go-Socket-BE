@@ -3,8 +3,11 @@ package com.mycom.socket.member.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycom.socket.auth.config.SecurityConfig;
 import com.mycom.socket.auth.controller.AuthController;
-import com.mycom.socket.auth.dto.request.RegisterRequestDto;
+import com.mycom.socket.auth.dto.request.RegisterRequest;
+import com.mycom.socket.auth.dto.response.RegisterResponse;
 import com.mycom.socket.auth.service.AuthService;
+import com.mycom.socket.auth.service.MailService;
+import com.mycom.socket.global.exception.BadRequestException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -33,18 +36,27 @@ class AuthControllerTest {
     @MockBean
     private AuthService authService;
 
+    @MockBean  // MailService도 필요
+    private MailService mailService;
+
     @Test
     @WithMockUser
     void 회원가입_성공() throws Exception {
         // given
-        RegisterRequestDto request = new RegisterRequestDto(
+        RegisterRequest request = new RegisterRequest(
                 "test@example.com",
                 "testUser",
                 "password123",
                 "안녕하세요"
         );
-        given(authService.register(any(RegisterRequestDto.class)))
-                .willReturn(1L);
+
+        RegisterResponse expectedResponse = RegisterResponse.of(1L,
+                "test@example.com",
+                "testUser"
+        );
+
+        given(authService.register(any(RegisterRequest.class)))
+                .willReturn(expectedResponse);
 
         // when & then
         mockMvc.perform(post("/api/auth/register")
@@ -52,15 +64,40 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("Success"))
-                .andExpect(jsonPath("$.data").value(1));
+                .andExpect(jsonPath("$.memberId").value(1))
+                .andExpect(jsonPath("$.email").value("test@example.com"))
+                .andExpect(jsonPath("$.nickname").value("testUser"))
+                .andExpect(jsonPath("$.message").value("회원가입이 완료되었습니다."));
+    }
+
+    @Test
+    @WithMockUser
+    void 회원가입_실패_이메일_미인증() throws Exception {
+        // given
+        RegisterRequest request = new RegisterRequest(
+                "test@example.com",
+                "testUser",
+                "password123",
+                "안녕하세요"
+        );
+
+        given(authService.register(any(RegisterRequest.class)))
+                .willThrow(new BadRequestException("이메일 인증이 필요합니다."));
+
+        // when & then
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("이메일 인증이 필요합니다."));
     }
 
     @Test
     @WithMockUser
     void 회원가입_실패_잘못된_입력값() throws Exception {
         // given
-        RegisterRequestDto request = new RegisterRequestDto(
+        RegisterRequest request = new RegisterRequest(
                 "invalid-email",
                 "t",
                 "123",

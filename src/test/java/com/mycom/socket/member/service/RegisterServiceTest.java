@@ -1,6 +1,6 @@
 package com.mycom.socket.member.service;
 
-import com.mycom.socket.auth.dto.request.RegisterRequestDto;
+import com.mycom.socket.auth.dto.request.RegisterRequest;
 import com.mycom.socket.auth.service.AuthService;
 import com.mycom.socket.go_socket.entity.Member;
 import com.mycom.socket.go_socket.repository.MemberRepository;
@@ -33,7 +33,7 @@ class RegisterServiceTest {
     @Test
     void 회원가입_성공() {
         // given
-        RegisterRequestDto request = new RegisterRequestDto(
+        RegisterRequest request = new RegisterRequest(
                 "test@example.com",
                 "testUser",
                 "password123",

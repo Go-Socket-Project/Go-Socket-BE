@@ -1,7 +1,7 @@
 package com.mycom.socket.member.service;
 
-import com.mycom.socket.auth.dto.request.LoginRequestDto;
-import com.mycom.socket.auth.dto.response.LoginResponseDto;
+import com.mycom.socket.auth.dto.request.LoginRequest;
+import com.mycom.socket.auth.dto.response.LoginResponse;
 import com.mycom.socket.auth.jwt.JWTUtil;
 import com.mycom.socket.auth.service.AuthService;
 import com.mycom.socket.global.exception.BadRequestException;
@@ -50,7 +50,7 @@ class LoginTest {
         String encodedPassword = "encodedPassword";
         String token = "test.token.here";
 
-        LoginRequestDto request = new LoginRequestDto(email, password);
+        LoginRequest request = new LoginRequest(email, password);
         Member member = Member.builder()
                 .email(email)
                 .password(encodedPassword)
@@ -63,7 +63,7 @@ class LoginTest {
         when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
         when(jwtUtil.createToken(email)).thenReturn(token);
 
-        LoginResponseDto response = authService.login(request, this.response);
+        LoginResponse response = authService.login(request, this.response);
 
         // then
         ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
@@ -91,7 +91,7 @@ class LoginTest {
         // given
         String email = "nonexistent@test.com";
         String password = "password";
-        LoginRequestDto request = new LoginRequestDto(email, password);
+        LoginRequest request = new LoginRequest(email, password);
 
         // when
         when(memberRepository.findByEmail(email)).thenReturn(Optional.empty());
@@ -108,7 +108,7 @@ class LoginTest {
         String email = "test@test.com";
         String password = "wrongpassword";
         String encodedPassword = "encodedPassword";
-        LoginRequestDto request = new LoginRequestDto(email, password);
+        LoginRequest request = new LoginRequest(email, password);
 
         Member member = Member.builder()
                 .email(email)

@@ -1,7 +1,7 @@
 package com.mycom.socket.member.service;
 
-import com.mycom.socket.auth.dto.request.LoginRequestDto;
-import com.mycom.socket.auth.dto.response.LoginResponseDto;
+import com.mycom.socket.auth.dto.request.LoginRequest;
+import com.mycom.socket.auth.dto.response.LoginResponse;
 import com.mycom.socket.auth.service.AuthService;
 import com.mycom.socket.go_socket.entity.Member;
 import com.mycom.socket.go_socket.entity.enums.MemberRole;
@@ -46,11 +46,11 @@ class LoginIntegrationTest {
     @Test
     void 로그인통합테스트() {
         // given
-        LoginRequestDto request = new LoginRequestDto("test@test.com", "password");
+        LoginRequest request = new LoginRequest("test@test.com", "password");
         HttpServletResponse response = new MockHttpServletResponse();
 
         // when
-        LoginResponseDto loginResponse = authService.login(request, response);
+        LoginResponse loginResponse = authService.login(request, response);
         Cookie cookie = ((MockHttpServletResponse) response).getCookie("Authorization");
 
         // then
