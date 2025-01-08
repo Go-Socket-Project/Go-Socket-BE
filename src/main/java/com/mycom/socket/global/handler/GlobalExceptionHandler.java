@@ -44,21 +44,30 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(errorMessage));
     }
 
-   // 일반적인 예외 처리 (IllegalArgumentException, NoSuchElementException 등)
-    @ExceptionHandler({IllegalArgumentException.class, NoSuchElementException.class, NoResourceFoundException.class})
-    protected ResponseEntity<ApiResponse<?>> handleCommonException(Exception e) {
-        HttpStatus status = (e instanceof NoResourceFoundException) ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
-        log.error("Common Exception : {}", e.getMessage());
+    // IllegalArgumentException 처리
+    @ExceptionHandler(IllegalArgumentException.class)
+    protected ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("IllegalArgumentException: {}", e.getMessage());
         return ResponseEntity
-                .status(status)
+                .status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(e.getMessage()));
     }
+
+    // NoSuchElementException 처리
+    @ExceptionHandler(NoSuchElementException.class)
+    protected ResponseEntity<ApiResponse<?>> handleNoSuchElementException(NoSuchElementException e) {
+        log.warn("NoSuchElementException : {}", e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(e.getMessage()));
+    }
+
     // 모든 예외 처리 (최후의 보루)
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ApiResponse<?>> handleAllException(Exception e) {
         log.error("Internal Server Error", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(e.getMessage() != null ? e.getMessage() : "서버 내부 오류가 발생했습니다."));
+                .body(ApiResponse.error("서버 내부 오류가 발생했습니다."));
     }
 }
