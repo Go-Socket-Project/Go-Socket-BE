@@ -10,6 +10,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,13 +20,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MailService {
 
     private final JavaMailSender javaMailSender;
-    private final Map<String, Integer> verificationCodes = new ConcurrentHashMap<>();
+    private final RateLimiter rateLimiter; // 인증 번호 요청 제한
+    private final Map<String, Integer> verificationCodes = new ConcurrentHashMap<>(); // 이메일별 인증번호 저장
+    private final Map<String, LocalDateTime> expiryTimes = new ConcurrentHashMap<>(); // 이메일별 인증번호 만료 시간 저장
+
+    private static final Duration CODE_VALID_DURATION = Duration.ofMinutes(5);
 
     @Value("${spring.mail.username}")
     private String senderEmail;
 
-
-    // 랜덤으로 숫자 생성
+    /**
+     * 6자리 난수 인증번호 생성
+     * SecureRandom 사용하여 보안성 향상
+     * @return 100000~999999 범위의 인증번호
+     */
     private int createVerificationCode() {
         // Math.random()은 예측 가능한 난수를 생성할 수 있어 보안에 취약
         // SecureRandom은 암호학적으로 안전한 난수를 생성하므로 인증번호 생성에 더 적합
@@ -32,6 +41,11 @@ public class MailService {
         return 100000 + secureRandom.nextInt(900000);
     }
 
+    /**
+     * 인증메일 생성
+     * @param mail 수신자 이메일 주소
+     * @return 생성된 인증메일
+     */
     public MimeMessage createMail(String mail) {
         int verificationCode = createVerificationCode();
         verificationCodes.put(mail, verificationCode);
@@ -53,15 +67,49 @@ public class MailService {
         return message;
     }
 
+    /**
+     * 인증메일 발송 및 인증번호 반환
+     * @param mail 수신자 이메일 주소
+     * @return 생성된 인증번호
+     */
     public int sendMail(String mail) {
+        rateLimiter.checkRateLimit(mail);
         MimeMessage message = createMail(mail);
         javaMailSender.send(message);
+
+        // 만료 시간 설정
+        expiryTimes.put(mail, LocalDateTime.now().plus(CODE_VALID_DURATION));
+
         return verificationCodes.get(mail);
     }
 
+    /**
+     * 인증번호 검증
+     * @param email 수신자 이메일 주소
+     * @param code 사용자가 입력한 인증번호
+     * @return 인증번호 일치 여부
+     */
     public boolean verifyCode(String email, String code) {
         Integer savedCode = verificationCodes.get(email);
-        return savedCode != null && String.valueOf(savedCode).equals(code);
+
+
+        LocalDateTime expiryTime = expiryTimes.get(email);
+
+        // 코드가 없거나 만료된 경우
+        if (savedCode == null ||
+                expiryTime == null ||
+                LocalDateTime.now().isAfter(expiryTime)) {
+            return false;
+        }
+
+        boolean isValid = String.valueOf(savedCode).equals(code);
+        if (isValid) {
+            // 검증 성공시 데이터 삭제
+            verificationCodes.remove(email);
+            expiryTimes.remove(email);
+        }
+        return isValid;
+
     }
 }
 
