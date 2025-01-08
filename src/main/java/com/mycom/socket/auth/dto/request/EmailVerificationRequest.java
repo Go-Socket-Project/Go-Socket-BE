@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 
-public record EmailVerificationRequestDto(
+public record EmailVerificationRequest(
         @NotEmpty(message = "이메일 주소를 입력해주세요.")
         @Email(message = "유효하지 않은 이메일 형식입니다.")
         String email,

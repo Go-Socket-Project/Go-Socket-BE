@@ -1,5 +1,6 @@
 package com.mycom.socket.auth.service;
 
+import com.mycom.socket.auth.dto.response.EmailVerificationResponse;
 import com.mycom.socket.auth.service.data.VerificationData;
 import com.mycom.socket.global.exception.BaseException;
 import jakarta.mail.MessagingException;
@@ -41,14 +42,14 @@ public class MailService {
 
     /**
      * 인증메일 생성
-     * @param mail 수신자 이메일 주소
+     * @param email 수신자 이메일 주소
      * @return 생성된 인증메일
      */
-    public MimeMessage createMail(String mail, String verificationCode) {
+    public MimeMessage createMail(String email, String verificationCode) {
         MimeMessage message = javaMailSender.createMimeMessage();
         try {
             message.setFrom(senderEmail);
-            message.setRecipients(MimeMessage.RecipientType.TO, mail);
+            message.setRecipients(MimeMessage.RecipientType.TO, email);
             message.setSubject("이메일 인증");
             String body = String.format("""
                    <h3>요청하신 인증 번호입니다.</h3>
@@ -65,47 +66,58 @@ public class MailService {
 
     /**
      * 인증메일 발송 및 인증번호 반환
-     * @param mail 수신자 이메일 주소
+     * @param email 수신자 이메일 주소
      * @return 생성된 인증번호
      */
-    public boolean sendMail(String mail) {
-        rateLimiter.checkRateLimit(mail);
-        String verificationCode = createVerificationCode();
-        verificationDataMap.put(mail, new VerificationData(verificationCode));
+    public EmailVerificationResponse sendMail(String email) {
+        rateLimiter.checkRateLimit(email);
 
-        MimeMessage message = createMail(mail, verificationCode);
-        try{
+        String verificationCode = createVerificationCode();
+        verificationDataMap.put(email, new VerificationData(verificationCode));
+
+        MimeMessage message = createMail(email, verificationCode);
+        try {
             javaMailSender.send(message);
-            return true;
-        }catch (Exception e) {
-            throw new BaseException("이메일 발송 중 오류가 발생했습니다: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return EmailVerificationResponse.of("이메일 전송 성공");
+        } catch (Exception e) {
+            throw new BaseException("이메일 발송 중 오류가 발생했습니다: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
      * 인증번호 검증
+     *
      * @param email 수신자 이메일 주소
-     * @param code 사용자가 입력한 인증번호
+     * @param code  사용자가 입력한 인증번호
      * @return 인증번호 일치 여부
      */
-    public boolean verifyCode(String email, String code) {
-        if (!StringUtils.hasText(code) || !code.matches("\\d{6}")) {
-            return false;
-        }
+    public EmailVerificationResponse verifyCode(String email, String code) {
+        validateVerificationCode(code);
 
         VerificationData data = verificationDataMap.get(email);
-
         if (data == null || data.isExpired()) {
-            return false;
+            throw new BaseException("인증 코드가 만료되었거나 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
 
-        boolean isVerified = data.code().equals(code);
-
-        if (isVerified){
-            verificationDataMap.remove(email);
+        if (!data.code().equals(code)) {
+            throw new BaseException("인증 코드가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
 
-        return isVerified;
+        verificationDataMap.put(email, data.withVerified());
+        return EmailVerificationResponse.of("이메일 인증이 완료되었습니다.");
     }
+
+    private void validateVerificationCode(String code) {
+        if (!StringUtils.hasText(code) || !code.matches("\\d{6}")) {
+            throw new BaseException("유효하지 않은 인증 코드 형식입니다.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public boolean isEmailVerified(String email) {
+        VerificationData data = verificationDataMap.get(email);
+        return data != null && !data.isExpired() && data.verified();
+    }
+
 }
 

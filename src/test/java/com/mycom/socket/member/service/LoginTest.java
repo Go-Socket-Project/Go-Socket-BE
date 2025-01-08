@@ -1,8 +1,9 @@
 package com.mycom.socket.member.service;
 
-import com.mycom.socket.auth.dto.request.LoginRequestDto;
-import com.mycom.socket.auth.dto.response.LoginResponseDto;
+import com.mycom.socket.auth.dto.request.LoginRequest;
+import com.mycom.socket.auth.dto.response.LoginResponse;
 import com.mycom.socket.auth.jwt.JWTUtil;
+import com.mycom.socket.auth.security.CookieUtil;
 import com.mycom.socket.auth.service.AuthService;
 import com.mycom.socket.global.exception.BadRequestException;
 import com.mycom.socket.go_socket.entity.Member;
@@ -39,6 +40,9 @@ class LoginTest {
     private JWTUtil jwtUtil;
 
     @Mock
+    private CookieUtil cookieUtil;
+
+    @Mock
     private HttpServletResponse response;
 
     @Test
@@ -50,7 +54,7 @@ class LoginTest {
         String encodedPassword = "encodedPassword";
         String token = "test.token.here";
 
-        LoginRequestDto request = new LoginRequestDto(email, password);
+        LoginRequest request = new LoginRequest(email, password);
         Member member = Member.builder()
                 .email(email)
                 .password(encodedPassword)
@@ -58,32 +62,28 @@ class LoginTest {
                 .role(MemberRole.USER)
                 .build();
 
-        // when
+        Cookie authCookie = new Cookie("Authorization", token);
+        authCookie.setHttpOnly(true);
+        authCookie.setSecure(true);
+        authCookie.setPath("/");
+        authCookie.setMaxAge(1800);
+
         when(memberRepository.findByEmail(email)).thenReturn(Optional.of(member));
         when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
         when(jwtUtil.createToken(email)).thenReturn(token);
+        when(cookieUtil.createAuthCookie(token)).thenReturn(authCookie);  // CookieUtil 동작 정의
 
-        LoginResponseDto response = authService.login(request, this.response);
+        // when
+        LoginResponse response = authService.login(request, this.response);
 
         // then
-        ArgumentCaptor<Cookie> cookieCaptor = ArgumentCaptor.forClass(Cookie.class);
-        verify(this.response).addCookie(cookieCaptor.capture());
-        Cookie cookie = cookieCaptor.getValue();
-
-        assertAll(
-                () -> assertEquals(email, response.email()),
-                () -> assertEquals(nickname, response.nickname()),
-                () -> assertEquals("Authorization", cookie.getName()),
-                () -> assertEquals(token, cookie.getValue()),
-                () -> assertTrue(cookie.isHttpOnly()),
-                () -> assertTrue(cookie.getSecure()),
-                () -> assertEquals("/", cookie.getPath()),
-                () -> assertEquals(1800, cookie.getMaxAge())
-        );
-
+        verify(this.response).addCookie(authCookie);
+        assertEquals(email, response.email());
+        assertEquals(nickname, response.nickname());
         verify(memberRepository).findByEmail(email);
         verify(passwordEncoder).matches(password, encodedPassword);
         verify(jwtUtil).createToken(email);
+        verify(cookieUtil).createAuthCookie(token);
     }
 
     @Test
@@ -91,7 +91,7 @@ class LoginTest {
         // given
         String email = "nonexistent@test.com";
         String password = "password";
-        LoginRequestDto request = new LoginRequestDto(email, password);
+        LoginRequest request = new LoginRequest(email, password);
 
         // when
         when(memberRepository.findByEmail(email)).thenReturn(Optional.empty());
@@ -108,7 +108,7 @@ class LoginTest {
         String email = "test@test.com";
         String password = "wrongpassword";
         String encodedPassword = "encodedPassword";
-        LoginRequestDto request = new LoginRequestDto(email, password);
+        LoginRequest request = new LoginRequest(email, password);
 
         Member member = Member.builder()
                 .email(email)

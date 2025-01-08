@@ -1,16 +1,14 @@
 package com.mycom.socket.auth.controller;
 
-import com.mycom.socket.auth.dto.request.EmailRequestDto;
-import com.mycom.socket.auth.dto.request.EmailVerificationRequestDto;
-import com.mycom.socket.auth.dto.request.LoginRequestDto;
-import com.mycom.socket.auth.dto.request.RegisterRequestDto;
-import com.mycom.socket.auth.dto.response.EmailVerificationCheckResponseDto;
-import com.mycom.socket.auth.dto.response.EmailVerificationResponseDto;
-import com.mycom.socket.auth.dto.response.LoginResponseDto;
+import com.mycom.socket.auth.dto.request.EmailRequest;
+import com.mycom.socket.auth.dto.request.EmailVerificationRequest;
+import com.mycom.socket.auth.dto.request.LoginRequest;
+import com.mycom.socket.auth.dto.request.RegisterRequest;
+import com.mycom.socket.auth.dto.response.EmailVerificationResponse;
+import com.mycom.socket.auth.dto.response.LoginResponse;
+import com.mycom.socket.auth.dto.response.RegisterResponse;
 import com.mycom.socket.auth.service.AuthService;
 import com.mycom.socket.auth.service.MailService;
-import com.mycom.socket.auth.service.RateLimiter;
-import com.mycom.socket.global.exception.BaseException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +21,16 @@ public class AuthController {
 
     private final AuthService authService;
     private final MailService mailService;
-    private final RateLimiter rateLimiter;
 
     @PostMapping("/login")
-    public LoginResponseDto login(@Valid @RequestBody LoginRequestDto request,
-                                  HttpServletResponse response) {
+    public LoginResponse login(@Valid @RequestBody LoginRequest request,
+                               HttpServletResponse response) {
         return authService.login(request, response);
+    }
+
+    @PostMapping("/register")
+    public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
+        return authService.register(request);
     }
 
     @PostMapping("/logout")
@@ -36,31 +38,14 @@ public class AuthController {
         authService.logout(response);
     }
 
-    @PostMapping("/register")
-    public Long register(@Valid @RequestBody RegisterRequestDto request) {
-        return authService.register(request);
-    }
-
     @PostMapping("/verification")
-    public EmailVerificationResponseDto mailSend(@Valid @RequestBody EmailRequestDto emailRequestDto) {
-        try {
-            boolean isSuccess = mailService.sendMail(emailRequestDto.email());
-            return isSuccess ? EmailVerificationResponseDto.createSuccessResponse() : EmailVerificationResponseDto.createFailureResponse("이메일 전송에 실패했습니다.");
-        } catch (BaseException e) {
-            return EmailVerificationResponseDto.createFailureResponse(e.getMessage());
-        }
+    public EmailVerificationResponse sendVerificationEmail(@Valid @RequestBody EmailRequest request) {
+        return mailService.sendMail(request.email());
     }
 
     @PostMapping("/email/verify")
-    public EmailVerificationCheckResponseDto mailCheck(@Valid @RequestBody EmailVerificationRequestDto emailRequestDto) {
-        try{
-            rateLimiter.checkRateLimit(emailRequestDto.email());// 시도 횟수 제한
-            boolean isVerified =  mailService.verifyCode(emailRequestDto.email(), emailRequestDto.code());
-            return isVerified ? EmailVerificationCheckResponseDto.createSuccessResponse() :
-                    EmailVerificationCheckResponseDto.createFailureResponse("이메일 인증에 실패했습니다.");
-        }catch (BaseException e){
-            return EmailVerificationCheckResponseDto.createFailureResponse(e.getMessage());
-        }
+    public EmailVerificationResponse verifyEmail(@Valid @RequestBody EmailVerificationRequest request) {
+        return mailService.verifyCode(request.email(), request.code());
     }
 
 }
