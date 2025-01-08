@@ -1,5 +1,6 @@
 package com.mycom.socket.auth.service;
 
+import com.mycom.socket.auth.service.data.VerificationData;
 import com.mycom.socket.global.exception.BaseException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -21,9 +22,8 @@ public class MailService {
 
     private final JavaMailSender javaMailSender;
     private final RateLimiter rateLimiter; // 인증 번호 요청 제한
-    private final Map<String, Integer> verificationCodes = new ConcurrentHashMap<>(); // 이메일별 인증번호 저장
-    private final Map<String, LocalDateTime> expiryTimes = new ConcurrentHashMap<>(); // 이메일별 인증번호 만료 시간 저장
 
+    private final Map<String, VerificationData> verificationDataMap = new ConcurrentHashMap<>();
     private static final Duration CODE_VALID_DURATION = Duration.ofMinutes(5);
 
     @Value("${spring.mail.username}")
@@ -48,7 +48,10 @@ public class MailService {
      */
     public MimeMessage createMail(String mail) {
         int verificationCode = createVerificationCode();
-        verificationCodes.put(mail, verificationCode);
+        verificationDataMap.put(mail, new VerificationData(
+                verificationCode,
+                LocalDateTime.now().plus(CODE_VALID_DURATION)
+        ));
 
         MimeMessage message = javaMailSender.createMimeMessage();
         try {
@@ -62,7 +65,8 @@ public class MailService {
                 """, verificationCode);
             message.setText(body, "UTF-8", "html");
         } catch (MessagingException e) {
-            throw new BaseException("이메일 생성 중 오류가 발생했습니다.", HttpStatus.BAD_REQUEST);
+            throw new BaseException("이메일 생성 중 오류가 발생했습니다: " + e.getMessage(),
+                    HttpStatus.BAD_REQUEST);
         }
         return message;
     }
@@ -77,10 +81,7 @@ public class MailService {
         MimeMessage message = createMail(mail);
         javaMailSender.send(message);
 
-        // 만료 시간 설정
-        expiryTimes.put(mail, LocalDateTime.now().plus(CODE_VALID_DURATION));
-
-        return verificationCodes.get(mail);
+        return verificationDataMap.get(mail).code();
     }
 
     /**
@@ -90,23 +91,15 @@ public class MailService {
      * @return 인증번호 일치 여부
      */
     public boolean verifyCode(String email, String code) {
-        Integer savedCode = verificationCodes.get(email);
+        VerificationData data = verificationDataMap.get(email);
 
-
-        LocalDateTime expiryTime = expiryTimes.get(email);
-
-        // 코드가 없거나 만료된 경우
-        if (savedCode == null ||
-                expiryTime == null ||
-                LocalDateTime.now().isAfter(expiryTime)) {
+        if (data == null || LocalDateTime.now().isAfter(data.expiryTime())) {
             return false;
         }
 
-        boolean isValid = String.valueOf(savedCode).equals(code);
+        boolean isValid = String.valueOf(data.code()).equals(code);
         if (isValid) {
-            // 검증 성공시 데이터 삭제
-            verificationCodes.remove(email);
-            expiryTimes.remove(email);
+            verificationDataMap.remove(email);
         }
         return isValid;
 
