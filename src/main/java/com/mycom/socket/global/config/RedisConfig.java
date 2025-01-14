@@ -15,11 +15,14 @@ public class RedisConfig {
     private final RedisProperties redisProperties;
 
     @Bean
+    public LettuceConnectionFactory redisConnectionFactory() {
+        return new LettuceConnectionFactory(redisProperties.getHost(), redisProperties.getPort());
+    }
+
+    @Bean
     public RedisTemplate<?, ?> redisTemplate() {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(
-                new LettuceConnectionFactory(redisProperties.getHost(), redisProperties.getPort())
-        );
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
 
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());

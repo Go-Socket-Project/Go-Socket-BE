@@ -2,22 +2,16 @@ package com.mycom.socket.auth.service;
 
 import com.mycom.socket.auth.config.MailProperties;
 import com.mycom.socket.auth.dto.response.EmailVerificationResponse;
-import com.mycom.socket.auth.service.data.VerificationData;
 import com.mycom.socket.global.exception.BaseException;
 import com.mycom.socket.global.service.RedisService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.security.SecureRandom;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -27,17 +21,17 @@ public class MailService {
     private final RedisService redisService;
     private final MailProperties mailProperties;
 
-
     /**
-     * 6자리 난수 인증번호 생성
-     * SecureRandom 사용하여 보안성 향상
-     * @return 100000~999999 범위의 인증번호
+     * 6자리 인증번호 생성 (100000-999999)
      */
     private String createVerificationCode() {
         // Math.random()은 예측 가능한 난수를 생성할 수 있어 보안에 취약
         // SecureRandom은 암호학적으로 안전한 난수를 생성하므로 인증번호 생성에 더 적합
-        SecureRandom secureRandom = new SecureRandom();
-        return String.format("%06d", secureRandom.nextInt(1000000));
+        return String.format("%06d", new SecureRandom().nextInt(1000000));
+    }
+
+    public boolean isEmailVerified(String email) {
+        return redisService.isEmailVerified(email);
     }
 
     /**
@@ -72,18 +66,13 @@ public class MailService {
         }
 
         String verificationCode = createVerificationCode();
-        redisService.saveCode(email, verificationCode);
+        redisService.saveCode(verificationCode);
 
         MimeMessage message = createMail(email, verificationCode);
         try {
             javaMailSender.send(message);
-            return EmailVerificationResponse.of("이메일 인증이 완료되었습니다.");
-        }  catch (MailSendException e) {
-            // 메일 전송 실패 시 재시도 로직 추가
-            throw new BaseException("이메일 발송 중 오류가 발생했습니다: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        catch (Exception e) {
+            return EmailVerificationResponse.of("이메일 전송 성공");  // 메시지 수정
+        } catch (Exception e) {
             throw new BaseException("이메일 발송 중 오류가 발생했습니다: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -97,16 +86,17 @@ public class MailService {
      * @return 인증번호 일치 여부
      */
     public EmailVerificationResponse verifyCode(String email, String code) {
-        if (!code.matches("\\d{6}") || !StringUtils.hasText(code)) {
+        if (!code.matches("\\d{6}")) {
             throw new BaseException("유효하지 않은 인증 코드 형식입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        String savedCode = redisService.getCode(email);
-        if (!code.equals(savedCode)) {
+        try {
+            redisService.getCode(code);  // 인증코드 검증
+            redisService.saveVerifiedEmail(email);  // 인증된 이메일 저장
+            return EmailVerificationResponse.of("이메일 인증이 완료되었습니다.");
+        } catch (Exception e) {
             throw new BaseException("인증 코드가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
-
-        return EmailVerificationResponse.of("이메일 인증이 완료되었습니다.");
     }
 
 }
