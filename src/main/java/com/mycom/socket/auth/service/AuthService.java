@@ -106,12 +106,12 @@ public class AuthService {
 
     /**
      * 로그아웃 처리
-     * Authorization 쿠키를 무효화하여 로그아웃 처리
+     * Access Token과 Refresh Token 쿠키를 무효화하여 로그아웃을 수행합니다.
      *
-     * @param response HTTP 응답 객체 (쿠키 무효화용)
+     * @param response HTTP 응답 객체
      */
     public void logout(HttpServletResponse response) {
-        response.addCookie(cookieUtil.createExpiredAuthCookie());  // CookieUtil 사용
-        response.addCookie(cookieUtil.createExpiredRefreshCookie());
+        response.addCookie(cookieUtil.createExpiredCookie(jwtProperties.getAccessTokenCookieName()));
+        response.addCookie(cookieUtil.createExpiredCookie(jwtProperties.getRefreshTokenCookieName()));
     }
 }
