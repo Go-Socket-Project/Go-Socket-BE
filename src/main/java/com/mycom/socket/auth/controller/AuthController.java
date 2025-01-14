@@ -38,12 +38,12 @@ public class AuthController {
         authService.logout(response);
     }
 
-    @PostMapping("/verification")
+    @PostMapping("/verify-email")
     public EmailVerificationResponse sendVerificationEmail(@Valid @RequestBody EmailRequest request) {
         return mailService.sendMail(request.email());
     }
 
-    @PostMapping("/email/verify")
+    @PostMapping("/verification-code")
     public EmailVerificationResponse verifyEmail(@Valid @RequestBody EmailVerificationRequest request) {
         return mailService.verifyCode(request.email(), request.code());
     }
