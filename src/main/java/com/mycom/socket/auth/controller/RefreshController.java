@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 @RestController
 @RequiredArgsConstructor
 public class RefreshController {
@@ -23,38 +26,36 @@ public class RefreshController {
 
     @PostMapping("/refresh")
     public TokenResponse refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = extractRefreshToken(request);
+        String refreshToken = extractRefreshToken(request)
+                .orElseThrow(() -> new BadRequestException("리프레시 토큰이 없습니다. 다시 로그인해주세요."));
 
         try {
-            jwtUtil.validateToken(refreshToken);
+            if (!jwtUtil.validateToken(refreshToken)) {
+                throw new JwtException("Invalid refresh token");
+            }
+
+            String email = jwtUtil.getEmail(refreshToken);
+            String newAccessToken = jwtUtil.createToken(email, jwtProperties.getAccessTokenValidityInSeconds());
+            String newRefreshToken = jwtUtil.createToken(email, jwtProperties.getRefreshTokenValidityInSeconds());
+
+            response.addCookie(cookieUtil.createAuthCookie(newAccessToken));
+            response.addCookie(cookieUtil.createRefreshCookie(newRefreshToken));
+
+            return TokenResponse.of(newAccessToken);
         } catch (JwtException e) {
-            response.addCookie(cookieUtil.createExpiredRefreshCookie());
+            response.addCookie(cookieUtil.createExpiredCookie(jwtProperties.getRefreshTokenCookieName()));
             throw new BadRequestException("유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.");
         }
-
-        String email = jwtUtil.getEmail(refreshToken);
-        String newAccessToken = jwtUtil.createToken(email, jwtProperties.getAccessTokenValidityInSeconds());
-
-        Cookie accessTokenCookie = cookieUtil.createAuthCookie(newAccessToken);
-        response.addCookie(accessTokenCookie);
-
-        String newRefreshToken = jwtUtil.createToken(email, jwtProperties.getRefreshTokenValidityInSeconds());
-        Cookie refreshTokenCookie = cookieUtil.createRefreshCookie(newRefreshToken);
-        response.addCookie(refreshTokenCookie);
-
-        return TokenResponse.of(newAccessToken);
     }
 
-    private String extractRefreshToken(HttpServletRequest request) {
+    private Optional<String> extractRefreshToken(HttpServletRequest request) {
         if (request.getCookies() == null) {
-            throw new BadRequestException("리프레시 토큰이 없습니다. 다시 로그인해주세요.");
+            return Optional.empty();
         }
 
-        for (Cookie cookie : request.getCookies()) {
-            if (jwtProperties.getRefreshTokenCookieName().equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-        throw new BadRequestException("리프레시 토큰이 없습니다. 다시 로그인해주세요.");
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> jwtProperties.getRefreshTokenCookieName().equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst();
     }
 }
