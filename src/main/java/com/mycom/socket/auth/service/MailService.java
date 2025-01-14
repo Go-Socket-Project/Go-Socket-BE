@@ -66,7 +66,7 @@ public class MailService {
         }
 
         String verificationCode = createVerificationCode();
-        redisService.saveCode(verificationCode);
+        redisService.saveCode(email, verificationCode);
 
         MimeMessage message = createMail(email, verificationCode);
         try {
