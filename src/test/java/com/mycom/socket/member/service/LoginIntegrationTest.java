@@ -2,7 +2,7 @@ package com.mycom.socket.member.service;
 
 import com.mycom.socket.auth.dto.request.LoginRequest;
 import com.mycom.socket.auth.dto.response.LoginResponse;
-import com.mycom.socket.auth.jwt.JWTProperties;
+import com.mycom.socket.auth.config.JWTProperties;
 import com.mycom.socket.auth.service.AuthService;
 import com.mycom.socket.go_socket.entity.Member;
 import com.mycom.socket.go_socket.entity.enums.MemberRole;

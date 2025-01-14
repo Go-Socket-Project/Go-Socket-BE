@@ -5,7 +5,7 @@ import com.mycom.socket.auth.config.SecurityConfig;
 import com.mycom.socket.auth.controller.AuthController;
 import com.mycom.socket.auth.dto.request.RegisterRequest;
 import com.mycom.socket.auth.dto.response.RegisterResponse;
-import com.mycom.socket.auth.jwt.JWTProperties;
+import com.mycom.socket.auth.config.JWTProperties;
 import com.mycom.socket.auth.jwt.JWTUtil;
 import com.mycom.socket.auth.service.AuthService;
 import com.mycom.socket.auth.service.MailService;
