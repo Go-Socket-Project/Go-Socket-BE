@@ -1,6 +1,7 @@
 package com.mycom.socket.auth.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mycom.socket.auth.config.JWTProperties;
 import com.mycom.socket.auth.jwt.JWTUtil;
 import com.mycom.socket.global.dto.ApiResponse;
 import com.mycom.socket.auth.dto.request.LoginRequest;
@@ -28,6 +29,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final CookieUtil cookieUtil;
     private final ObjectMapper objectMapper;
+    private final JWTProperties jwtProperties;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
@@ -51,8 +53,15 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         MemberDetails memberDetails = (MemberDetails) authResult.getPrincipal();
         Member member = memberDetails.getMember();
 
-        String accessToken = jwtUtil.createAccessToken(member.getEmail()); //액세스 토큰 생성
-        String refreshToken = jwtUtil.createRefreshToken(member.getEmail()); //리프레시 토큰 생성
+        // JWT 토큰 생성
+        String accessToken = jwtUtil.createToken(
+                member.getEmail(),
+                jwtProperties.getAccessTokenValidityInSeconds()
+        );
+        String refreshToken = jwtUtil.createToken(
+                member.getEmail(),
+                jwtProperties.getRefreshTokenValidityInSeconds()
+        );
 
         // 쿠키 생성 및 설정
         Cookie accessTokenCookie = cookieUtil.createAuthCookie(accessToken); //액세스 토큰 쿠키
