@@ -17,6 +17,7 @@ public class RedisService {
      * Redis Key Prefix 상수
      */
     private static final String VERIFIED_EMAIL_PREFIX = "verified:email:";
+    private static final String VERIFICATION_CODE_PREFIX = "verification:code:";
     private static final String RATE_LIMIT_PREFIX = "rate-limit:";
 
     /**
@@ -33,7 +34,7 @@ public class RedisService {
      * 3분 후 자동 삭제
      */
     public void saveCode(String code) {
-        redisTemplate.opsForValue().set(code, code, VERIFICATION_TTL);
+        redisTemplate.opsForValue().set(VERIFICATION_CODE_PREFIX +code, code, VERIFICATION_TTL);
     }
 
     /**
