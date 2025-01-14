@@ -33,8 +33,8 @@ public class RedisService {
      * Key와 Value로 동일한 인증번호를 사용
      * 3분 후 자동 삭제
      */
-    public void saveCode(String code) {
-        redisTemplate.opsForValue().set(VERIFICATION_CODE_PREFIX +code, code, VERIFICATION_TTL);
+    public void saveCode(String email,String code) {
+        redisTemplate.opsForValue().set(VERIFICATION_CODE_PREFIX +email, code, VERIFICATION_TTL);
     }
 
     /**
@@ -42,8 +42,8 @@ public class RedisService {
      * 인증번호가 존재하지 않거나 만료된 경우 예외 발생
      * @throws BaseException 인증번호가 만료되었거나 존재하지 않는 경우
      */
-    public String getCode(String code) {
-        Object savedCode = redisTemplate.opsForValue().get(code);
+    public String getCode(String email) {
+        Object savedCode = redisTemplate.opsForValue().get(VERIFICATION_CODE_PREFIX + email);
         if (savedCode == null) {
             throw new BaseException("인증 코드가 만료되었거나 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
