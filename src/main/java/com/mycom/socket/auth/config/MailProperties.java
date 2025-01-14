@@ -1,0 +1,21 @@
+package com.mycom.socket.auth.config;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+@Getter
+@Setter
+@Component
+@ConfigurationProperties(prefix = "mail")
+public class MailProperties {
+    private String host;
+    private int port;
+    private String protocol;
+    private String username;
+    private String password;
+    private String senderEmail;
+    private String subject;
+    private String bodyTemplate;
+}
