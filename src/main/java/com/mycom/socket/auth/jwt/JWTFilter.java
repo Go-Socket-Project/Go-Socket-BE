@@ -1,5 +1,6 @@
 package com.mycom.socket.auth.jwt;
 
+import com.mycom.socket.auth.config.JWTProperties;
 import com.mycom.socket.auth.service.MemberDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -1,7 +1,6 @@
 package com.mycom.socket.auth.config;
 
 import com.mycom.socket.auth.jwt.JWTFilter;
-import com.mycom.socket.auth.jwt.JWTProperties;
 import com.mycom.socket.auth.jwt.JWTUtil;
 import com.mycom.socket.auth.service.MemberDetailsService;
 import lombok.RequiredArgsConstructor;

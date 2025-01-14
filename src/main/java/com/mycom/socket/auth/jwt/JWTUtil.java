@@ -1,5 +1,6 @@
 package com.mycom.socket.auth.jwt;
 
+import com.mycom.socket.auth.config.JWTProperties;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;

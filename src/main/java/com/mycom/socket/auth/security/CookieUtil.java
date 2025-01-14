@@ -1,6 +1,6 @@
 package com.mycom.socket.auth.security;
 
-import com.mycom.socket.auth.jwt.JWTProperties;
+import com.mycom.socket.auth.config.JWTProperties;
 import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
