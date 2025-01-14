@@ -26,6 +26,7 @@ public class CookieUtil {
         cookie.setSecure(secure);
         cookie.setPath("/");
         cookie.setMaxAge((int) maxAge);
+        cookie.setAttribute("SameSite", "Strict"); //CSRF 공격 방지 설정 추가
         return cookie;
     }
 
