@@ -2,6 +2,7 @@ package com.mycom.socket.global.service;
 
 import com.mycom.socket.global.exception.BaseException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -57,11 +58,18 @@ public class RedisService {
      */
     public Long incrementCount(String email) {
         String key = RATE_LIMIT_PREFIX + email;
-        Long count = redisTemplate.opsForValue().increment(key);
-        if (count == 1) {
-            redisTemplate.expire(key, RATE_LIMIT_TTL);
-        }
-        return count;
+        // redisTemplate.execute를 사용하여 Redis 명령어를 트랜잭션으로 실행
+        return redisTemplate.execute(
+                (RedisConnection connection) -> {
+                    // Redis의 INCR 명령어를 실행하여 값을 증가시키고 반환
+                    Long count = connection.incr(key.getBytes());
+                    if (count == 1) {
+                        // 처음 호출된 경우, 만료 시간 설정
+                        connection.expire(key.getBytes(), RATE_LIMIT_TTL.getSeconds());
+                    }
+                    return count;
+                }
+        );
     }
 
     /**
