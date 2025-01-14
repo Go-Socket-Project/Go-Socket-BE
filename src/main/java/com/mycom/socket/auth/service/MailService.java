@@ -42,7 +42,7 @@ public class MailService {
     public MimeMessage createMail(String email, String verificationCode) {
         MimeMessage message = javaMailSender.createMimeMessage();
         try {
-            message.setFrom(mailProperties.getUsername());
+            message.setFrom(mailProperties.getSenderEmail());
             message.setRecipients(MimeMessage.RecipientType.TO, email);
             message.setSubject("이메일 인증");
             String body = String.format(mailProperties.getBodyTemplate(), verificationCode);
@@ -91,8 +91,10 @@ public class MailService {
         }
 
         try {
-            redisService.getCode(code);  // 인증코드 검증
-            redisService.saveVerifiedEmail(email);  // 인증된 이메일 저장
+            String saveCode = redisService.getCode(code);  // 인증코드 검증
+            if(!saveCode.equals(code)) {
+                throw new BaseException("인증 코드가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+            }
             return EmailVerificationResponse.of("이메일 인증이 완료되었습니다.");
         } catch (Exception e) {
             throw new BaseException("인증 코드가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
