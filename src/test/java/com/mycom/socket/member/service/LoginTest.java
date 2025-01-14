@@ -1,5 +1,6 @@
 package com.mycom.socket.member.service;
 
+import com.mycom.socket.auth.config.JWTProperties;
 import com.mycom.socket.auth.dto.request.LoginRequest;
 import com.mycom.socket.auth.dto.response.LoginResponse;
 import com.mycom.socket.auth.jwt.JWTUtil;
@@ -13,7 +14,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -35,6 +35,9 @@ class LoginTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private JWTProperties  jwtProperties;
 
     @Mock
     private JWTUtil jwtUtil;
@@ -70,7 +73,7 @@ class LoginTest {
 
         when(memberRepository.findByEmail(email)).thenReturn(Optional.of(member));
         when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
-        when(jwtUtil.createToken(email)).thenReturn(token);
+        when(jwtUtil.createToken(email, jwtProperties.getRefreshTokenValidityInSeconds())).thenReturn(token);
         when(cookieUtil.createAuthCookie(token)).thenReturn(authCookie);  // CookieUtil 동작 정의
 
         // when
@@ -82,7 +85,7 @@ class LoginTest {
         assertEquals(nickname, response.nickname());
         verify(memberRepository).findByEmail(email);
         verify(passwordEncoder).matches(password, encodedPassword);
-        verify(jwtUtil).createToken(email);
+        verify(jwtUtil).createToken(email, jwtProperties.getRefreshTokenValidityInSeconds());
         verify(cookieUtil).createAuthCookie(token);
     }
 

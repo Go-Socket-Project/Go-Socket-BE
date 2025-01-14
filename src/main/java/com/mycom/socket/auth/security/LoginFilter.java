@@ -51,11 +51,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         MemberDetails memberDetails = (MemberDetails) authResult.getPrincipal();
         Member member = memberDetails.getMember();
 
-        String token = jwtUtil.createToken(member.getEmail());
+        String accessToken = jwtUtil.createAccessToken(member.getEmail()); //액세스 토큰 생성
+        String refreshToken = jwtUtil.createRefreshToken(member.getEmail()); //리프레시 토큰 생성
 
         // 쿠키 생성 및 설정
-        Cookie authCookie = cookieUtil.createAuthCookie(token);
-        response.addCookie(authCookie);
+        Cookie accessTokenCookie = cookieUtil.createAuthCookie(accessToken); //액세스 토큰 쿠키
+        Cookie refreshTokenCookie = cookieUtil.createRefreshCookie(refreshToken); //리프레시 토큰 쿠키
+        response.addCookie(accessTokenCookie);
+        response.addCookie(refreshTokenCookie);
 
         // 로그인 응답 생성
         LoginResponse loginResponse = new LoginResponse(member.getEmail(), member.getNickname());

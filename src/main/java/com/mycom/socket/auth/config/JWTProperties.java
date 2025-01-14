@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "jwt")
 public class JWTProperties {
     private String secret;
-    private long accessTokenValidityInSeconds = 1800;
-    private String cookieName = "Authorization";
+    private long accessTokenValidityInSeconds;
+    private long refreshTokenValidityInSeconds;
+    private String accessTokenCookieName;
+    private String refreshTokenCookieName;
     private String issuer = "go_socket";
     private boolean secureCookie = false;
 }

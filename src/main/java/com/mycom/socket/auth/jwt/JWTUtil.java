@@ -26,12 +26,25 @@ public class JWTUtil {
     }
 
     /**
+     * 액세스 토큰 생성
+     */
+    public String createAccessToken(String email) {
+        return createToken(email, jwtProperties.getAccessTokenValidityInSeconds());
+    }
+
+    /**
+     * 리프레시 토큰 생성
+     */
+    public String createRefreshToken(String email) {
+        return createToken(email, jwtProperties.getRefreshTokenValidityInSeconds());
+    }
+
+    /**
      * JWT 토큰 생성
      */
-    public String createToken(String email) {
+    public String createToken(String email, long validityInSeconds) {
         Date now = new Date();
-        Date validity = new Date(now.getTime() +
-                (jwtProperties.getAccessTokenValidityInSeconds() * 1000));
+        Date validity = new Date(now.getTime() + (validityInSeconds * 1000));
 
         return Jwts.builder()
                 .issuer(jwtProperties.getIssuer())

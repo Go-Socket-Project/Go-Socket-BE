@@ -1,5 +1,6 @@
 package com.mycom.socket.auth.service;
 
+import com.mycom.socket.auth.config.JWTProperties;
 import com.mycom.socket.auth.dto.response.RegisterResponse;
 import com.mycom.socket.auth.jwt.JWTUtil;
 import com.mycom.socket.auth.security.CookieUtil;
@@ -28,6 +29,7 @@ public class AuthService {
     private final JWTUtil jwtUtil;
     private final MailService mailService;
     private final CookieUtil cookieUtil;
+    private final JWTProperties jwtProperties;
 
     /**
      * 사용자 로그인 처리
@@ -46,8 +48,17 @@ public class AuthService {
             throw new BadRequestException("잘못된 비밀번호입니다.");
         }
 
-        String token = jwtUtil.createToken(member.getEmail());
-        response.addCookie(cookieUtil.createAuthCookie(token));  // CookieUtil 사용
+        String refreshToken = jwtUtil.createToken(member.getEmail(),
+                jwtProperties.getRefreshTokenValidityInSeconds());
+
+        Cookie refreshTokenCookie = cookieUtil.createRefreshCookie(refreshToken);
+        response.addCookie(refreshTokenCookie);
+
+        String accessToken = jwtUtil.createToken(member.getEmail(),
+                jwtProperties.getAccessTokenValidityInSeconds());
+
+        Cookie accessTokenCookie = cookieUtil.createAuthCookie(accessToken);
+        response.addCookie(accessTokenCookie);
 
         return LoginResponse.of(member.getEmail(), member.getNickname());
     }
@@ -101,5 +112,6 @@ public class AuthService {
      */
     public void logout(HttpServletResponse response) {
         response.addCookie(cookieUtil.createExpiredAuthCookie());  // CookieUtil 사용
+        response.addCookie(cookieUtil.createExpiredRefreshCookie());
     }
 }
