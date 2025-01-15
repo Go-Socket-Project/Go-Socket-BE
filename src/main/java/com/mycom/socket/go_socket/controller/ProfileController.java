@@ -6,6 +6,7 @@ import com.mycom.socket.go_socket.dto.request.ProfileUpdateRequest;
 import com.mycom.socket.go_socket.dto.response.ProfileResponse;
 import com.mycom.socket.go_socket.entity.Member;
 import com.mycom.socket.go_socket.service.MemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class ProfileController {
     @PutMapping
     public ProfileResponse updateProfile(
             @AuthenticationPrincipal MemberDetails memberDetails,
-            @RequestBody ProfileUpdateRequest request
+            @RequestBody @Valid ProfileUpdateRequest request
     ) {
         Member updatedMember = memberService.updateProfile(
                 memberDetails.getMember().getEmail(),
@@ -38,7 +39,7 @@ public class ProfileController {
     @PutMapping("/password")
     public void updatePassword(
             @AuthenticationPrincipal MemberDetails memberDetails,
-            @RequestBody PasswordUpdateRequest request
+            @RequestBody @Valid PasswordUpdateRequest request
     ) {
         memberService.updatePassword(
                 memberDetails.getMember().getEmail(),

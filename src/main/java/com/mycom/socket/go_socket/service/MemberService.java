@@ -28,10 +28,10 @@ public class MemberService {
     @Transactional
     public void updatePassword(String email, String currentPassword, String newPassword) {
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("현재 비밀번호가 일치하지 않습니다."));
 
         if (!passwordEncoder.matches(currentPassword, member.getPassword())) {
-            throw new NotFoundException("사용자를 찾을 수 없습니다.");
+            throw new NotFoundException("새 비밀번호는 현재 비밀번호와 달라야 합니다.");
         }
 
         member.updatePassword(passwordEncoder.encode(newPassword));
