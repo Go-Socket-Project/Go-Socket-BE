@@ -1,10 +1,8 @@
 package com.mycom.socket.auth.jwt;
 
-import com.mycom.socket.auth.config.JWTProperties;
 import com.mycom.socket.auth.service.MemberDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,18 +19,22 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
-    private final JWTProperties jwtProperties;
+
     private final JWTUtil jwtUtil;
     private final MemberDetailsService memberDetailsService;
+
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String TOKEN_TYPE = "ACCESS_TOKEN";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            String token = resolveTokenFromCookie(request);
-            if (StringUtils.hasText(token) && jwtUtil.validateToken(token, "ACCESS_TOKEN")) {
-                setAuthentication(token);
+            // Bearer 토큰 확인
+            String bearerToken = resolveTokenFromHeader(request);
+            if (isValidBearerToken(bearerToken)) {
+                setAuthentication(bearerToken);
             }
         } catch (Exception e) {
             log.warn("인증 처리 실패", e);
@@ -42,14 +44,10 @@ public class JWTFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String resolveTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (jwtProperties.getAccessTokenCookieName().equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
+    private String resolveTokenFromHeader(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+            return bearerToken.substring(7);
         }
         return null;
     }
@@ -66,5 +64,11 @@ public class JWTFilter extends OncePerRequestFilter {
                 );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private boolean isValidBearerToken(String token) {
+        return StringUtils.hasText(token) &&
+                token.matches("^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$") &&
+                jwtUtil.validateToken(token, TOKEN_TYPE);
     }
 }

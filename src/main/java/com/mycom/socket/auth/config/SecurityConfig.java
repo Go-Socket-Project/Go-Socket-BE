@@ -20,7 +20,6 @@ import org.springframework.web.cors.CorsConfiguration;
 public class SecurityConfig{
 
     private final JWTUtil jwtUtil;
-    private final JWTProperties properties;
     private final MemberDetailsService memberDetailsService;
 
     @Bean
@@ -32,7 +31,7 @@ public class SecurityConfig{
                 .formLogin(AbstractHttpConfigurer::disable)
 
                 .addFilterBefore(
-                        new JWTFilter(properties, jwtUtil, memberDetailsService),
+                        new JWTFilter(jwtUtil, memberDetailsService),
                         UsernamePasswordAuthenticationFilter.class
                 )
 
