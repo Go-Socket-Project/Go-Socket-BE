@@ -31,7 +31,7 @@ public class JWTFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = resolveTokenFromCookie(request);
-            if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
+            if (StringUtils.hasText(token) && jwtUtil.validateToken(token, "ACCESS_TOKEN")) {
                 setAuthentication(token);
             }
         } catch (Exception e) {
