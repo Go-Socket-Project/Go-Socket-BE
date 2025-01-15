@@ -90,15 +90,13 @@ public class MailService {
             throw new BaseException("유효하지 않은 인증 코드 형식입니다.", HttpStatus.BAD_REQUEST);
         }
 
-        try {
-            String saveCode = redisService.getCode(code);  // 인증코드 검증
-            if(!saveCode.equals(code)) {
-                throw new BaseException("인증 코드가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
-            }
-            return EmailVerificationResponse.of("이메일 인증이 완료되었습니다.");
-        } catch (Exception e) {
+        String savedCode = redisService.getCode(email);  // Redis에서 코드를 가져옴
+
+        if(!savedCode.equals(code)){
             throw new BaseException("인증 코드가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
+        redisService.saveVerifiedEmail(email);
+        return EmailVerificationResponse.of("이메일 인증이 완료되었습니다.");
     }
 
 }

@@ -31,7 +31,7 @@ public class JWTFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             String token = resolveTokenFromCookie(request);
-            if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
+            if (StringUtils.hasText(token) && jwtUtil.validateToken(token, "ACCESS_TOKEN")) {
                 setAuthentication(token);
             }
         } catch (Exception e) {
@@ -46,7 +46,7 @@ public class JWTFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (jwtProperties.getCookieName().equals(cookie.getName())) {
+                if (jwtProperties.getAccessTokenCookieName().equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

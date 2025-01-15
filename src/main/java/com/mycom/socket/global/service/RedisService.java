@@ -90,7 +90,7 @@ public class RedisService {
      */
     public boolean isEmailVerified(String email) {
         Object verified = redisTemplate.opsForValue().get(VERIFIED_EMAIL_PREFIX + email);
-        return "true".equals(verified);
+        return verified != null && "true".equals(verified.toString());
     }
 
 }

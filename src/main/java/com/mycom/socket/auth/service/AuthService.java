@@ -1,5 +1,6 @@
 package com.mycom.socket.auth.service;
 
+import com.mycom.socket.auth.config.JWTProperties;
 import com.mycom.socket.auth.dto.response.RegisterResponse;
 import com.mycom.socket.auth.jwt.JWTUtil;
 import com.mycom.socket.auth.security.CookieUtil;
@@ -28,6 +29,7 @@ public class AuthService {
     private final JWTUtil jwtUtil;
     private final MailService mailService;
     private final CookieUtil cookieUtil;
+    private final JWTProperties jwtProperties;
 
     /**
      * 사용자 로그인 처리
@@ -46,8 +48,21 @@ public class AuthService {
             throw new BadRequestException("잘못된 비밀번호입니다.");
         }
 
-        String token = jwtUtil.createToken(member.getEmail());
-        response.addCookie(cookieUtil.createAuthCookie(token));  // CookieUtil 사용
+        // // 먼저 액세스 토큰 생성
+        String accessToken = jwtUtil.createToken(member.getEmail(),
+                jwtProperties.getRefreshTokenValidityInSeconds(), "ACCESS_TOKEN");
+
+        Cookie accessTokenCookie = cookieUtil.createAuthCookie(accessToken);
+
+        // 그 다음 리프레시 토큰 생성
+        String refreshToken = jwtUtil.createToken(member.getEmail(),
+                jwtProperties.getAccessTokenValidityInSeconds(), "REFRESH_TOKEN");
+
+        Cookie refreshTokenCookie = cookieUtil.createRefreshCookie(refreshToken);
+
+        // 쿠키 설정
+        response.addCookie(refreshTokenCookie);
+        response.addCookie(accessTokenCookie);
 
         return LoginResponse.of(member.getEmail(), member.getNickname());
     }
@@ -95,11 +110,12 @@ public class AuthService {
 
     /**
      * 로그아웃 처리
-     * Authorization 쿠키를 무효화하여 로그아웃 처리
+     * Access Token과 Refresh Token 쿠키를 무효화하여 로그아웃을 수행합니다.
      *
-     * @param response HTTP 응답 객체 (쿠키 무효화용)
+     * @param response HTTP 응답 객체
      */
     public void logout(HttpServletResponse response) {
-        response.addCookie(cookieUtil.createExpiredAuthCookie());  // CookieUtil 사용
+        response.addCookie(cookieUtil.createExpiredCookie(jwtProperties.getAccessTokenCookieName()));
+        response.addCookie(cookieUtil.createExpiredCookie(jwtProperties.getRefreshTokenCookieName()));
     }
 }
