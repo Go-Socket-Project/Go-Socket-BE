@@ -30,9 +30,10 @@ public class JWTFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            String token = resolveTokenFromCookie(request);
-            if (StringUtils.hasText(token) && jwtUtil.validateToken(token, "ACCESS_TOKEN")) {
-                setAuthentication(token);
+            // Bearer 토큰 확인
+            String bearerToken = resolveTokenFromHeader(request);
+            if (StringUtils.hasText(bearerToken) && jwtUtil.validateToken(bearerToken, "ACCESS_TOKEN")) {
+                setAuthentication(bearerToken);
             }
         } catch (Exception e) {
             log.warn("인증 처리 실패", e);
@@ -42,14 +43,10 @@ public class JWTFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String resolveTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (jwtProperties.getAccessTokenCookieName().equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
+    private String resolveTokenFromHeader(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
         }
         return null;
     }
