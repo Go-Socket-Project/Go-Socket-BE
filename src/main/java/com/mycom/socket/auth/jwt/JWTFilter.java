@@ -1,10 +1,8 @@
 package com.mycom.socket.auth.jwt;
 
-import com.mycom.socket.auth.config.JWTProperties;
 import com.mycom.socket.auth.service.MemberDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +19,12 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
 
-    private final JWTProperties jwtProperties;
+
     private final JWTUtil jwtUtil;
     private final MemberDetailsService memberDetailsService;
+
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String TOKEN_TYPE = "ACCESS_TOKEN";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -32,7 +33,7 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             // Bearer 토큰 확인
             String bearerToken = resolveTokenFromHeader(request);
-            if (StringUtils.hasText(bearerToken) && jwtUtil.validateToken(bearerToken, "ACCESS_TOKEN")) {
+            if (isValidBearerToken(bearerToken)) {
                 setAuthentication(bearerToken);
             }
         } catch (Exception e) {
@@ -45,7 +46,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private String resolveTokenFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(7);
         }
         return null;
@@ -63,5 +64,11 @@ public class JWTFilter extends OncePerRequestFilter {
                 );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private boolean isValidBearerToken(String token) {
+        return StringUtils.hasText(token) &&
+                token.matches("^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$") &&
+                jwtUtil.validateToken(token, TOKEN_TYPE);
     }
 }
