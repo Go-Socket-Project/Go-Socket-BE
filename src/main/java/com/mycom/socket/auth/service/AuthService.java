@@ -52,13 +52,13 @@ public class AuthService {
         String accessToken = jwtUtil.createToken(member.getEmail(),
                 jwtProperties.getRefreshTokenValidityInSeconds(), "ACCESS_TOKEN");
 
-        Cookie refreshTokenCookie = cookieUtil.createRefreshCookie(accessToken);
+        Cookie accessTokenCookie = cookieUtil.createAuthCookie(accessToken);
 
         // 그 다음 리프레시 토큰 생성
         String refreshToken = jwtUtil.createToken(member.getEmail(),
                 jwtProperties.getAccessTokenValidityInSeconds(), "REFRESH_TOKEN");
 
-        Cookie accessTokenCookie = cookieUtil.createAuthCookie(refreshToken);
+        Cookie refreshTokenCookie = cookieUtil.createRefreshCookie(refreshToken);
 
         // 쿠키 설정
         response.addCookie(refreshTokenCookie);
