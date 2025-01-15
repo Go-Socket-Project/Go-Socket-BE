@@ -48,16 +48,20 @@ public class AuthService {
             throw new BadRequestException("잘못된 비밀번호입니다.");
         }
 
-        String refreshToken = jwtUtil.createToken(member.getEmail(),
+        // // 먼저 액세스 토큰 생성
+        String accessToken = jwtUtil.createToken(member.getEmail(),
                 jwtProperties.getRefreshTokenValidityInSeconds(), "ACCESS_TOKEN");
 
-        Cookie refreshTokenCookie = cookieUtil.createRefreshCookie(refreshToken);
+        Cookie refreshTokenCookie = cookieUtil.createRefreshCookie(accessToken);
+
+        // 그 다음 리프레시 토큰 생성
+        String refreshToken = jwtUtil.createToken(member.getEmail(),
+                jwtProperties.getAccessTokenValidityInSeconds(), "REFRESH_TOKEN");
+
+        Cookie accessTokenCookie = cookieUtil.createAuthCookie(refreshToken);
+
+        // 쿠키 설정
         response.addCookie(refreshTokenCookie);
-
-        String accessToken = jwtUtil.createToken(member.getEmail(),
-                jwtProperties.getAccessTokenValidityInSeconds(), "ACCESS_TOKEN");
-
-        Cookie accessTokenCookie = cookieUtil.createAuthCookie(accessToken);
         response.addCookie(accessTokenCookie);
 
         return LoginResponse.of(member.getEmail(), member.getNickname());
