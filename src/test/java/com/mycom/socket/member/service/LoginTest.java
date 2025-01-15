@@ -73,7 +73,7 @@ class LoginTest {
 
         when(memberRepository.findByEmail(email)).thenReturn(Optional.of(member));
         when(passwordEncoder.matches(password, encodedPassword)).thenReturn(true);
-        when(jwtUtil.createToken(email, jwtProperties.getRefreshTokenValidityInSeconds())).thenReturn(token);
+        when(jwtUtil.createToken(email, jwtProperties.getRefreshTokenValidityInSeconds(), "ACCESS_TOKEN")).thenReturn(token);
         when(cookieUtil.createAuthCookie(token)).thenReturn(authCookie);  // CookieUtil 동작 정의
 
         // when
@@ -85,7 +85,7 @@ class LoginTest {
         assertEquals(nickname, response.nickname());
         verify(memberRepository).findByEmail(email);
         verify(passwordEncoder).matches(password, encodedPassword);
-        verify(jwtUtil).createToken(email, jwtProperties.getRefreshTokenValidityInSeconds());
+        verify(jwtUtil).createToken(email, jwtProperties.getRefreshTokenValidityInSeconds(), "ACCESS_TOKEN");
         verify(cookieUtil).createAuthCookie(token);
     }
 

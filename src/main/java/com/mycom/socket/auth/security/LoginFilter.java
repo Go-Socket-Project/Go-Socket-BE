@@ -56,11 +56,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // JWT 토큰 생성
         String accessToken = jwtUtil.createToken(
                 member.getEmail(),
-                jwtProperties.getAccessTokenValidityInSeconds()
+                jwtProperties.getAccessTokenValidityInSeconds(),
+                "ACCESS_TOKEN"
         );
         String refreshToken = jwtUtil.createToken(
                 member.getEmail(),
-                jwtProperties.getRefreshTokenValidityInSeconds()
+                jwtProperties.getRefreshTokenValidityInSeconds(),
+                "REFRESH_TOKEN"
         );
 
         // 쿠키 생성 및 설정

@@ -24,7 +24,7 @@ public class CookieUtil {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
         cookie.setSecure(secure);
-        cookie.setPath("/");
+        cookie.setPath("/api/auth");
         cookie.setMaxAge((int) maxAge);
         cookie.setAttribute("SameSite", "Strict"); //CSRF 공격 방지 설정 추가
         return cookie;

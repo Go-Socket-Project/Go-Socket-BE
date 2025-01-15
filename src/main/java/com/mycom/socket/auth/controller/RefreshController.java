@@ -24,28 +24,28 @@ public class RefreshController {
     private final CookieUtil cookieUtil;
     private final JWTProperties jwtProperties;
 
+
     @PostMapping("/refresh")
     public TokenResponse refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = extractRefreshToken(request)
-                .orElseThrow(() -> new BadRequestException("리프레시 토큰이 없습니다. 다시 로그인해주세요."));
-
-        try {
-            if (!jwtUtil.validateToken(refreshToken)) {
-                throw new JwtException("Invalid refresh token");
-            }
-
-            String email = jwtUtil.getEmail(refreshToken);
-            String newAccessToken = jwtUtil.createToken(email, jwtProperties.getAccessTokenValidityInSeconds());
-            String newRefreshToken = jwtUtil.createToken(email, jwtProperties.getRefreshTokenValidityInSeconds());
-
-            response.addCookie(cookieUtil.createAuthCookie(newAccessToken));
-            response.addCookie(cookieUtil.createRefreshCookie(newRefreshToken));
-
-            return TokenResponse.of(newAccessToken);
-        } catch (JwtException e) {
-            response.addCookie(cookieUtil.createExpiredCookie(jwtProperties.getRefreshTokenCookieName()));
-            throw new BadRequestException("유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.");
+        Optional<String> refreshTokenOpt = extractRefreshToken(request);
+        if (refreshTokenOpt.isEmpty()) {
+            return TokenResponse.of("리프레시 토큰이 없습니다. 다시 로그인해주세요.");
         }
+
+        String refreshToken = refreshTokenOpt.get();
+        if (!jwtUtil.validateToken(refreshToken, "REFRESH_TOKEN")) {
+            response.addCookie(cookieUtil.createExpiredCookie(jwtProperties.getRefreshTokenCookieName()));
+            return TokenResponse.of("유효하지 않은 리프레시 토큰입니다. 다시 로그인해주세요.");
+        }
+
+        String email = jwtUtil.getEmail(refreshToken);
+        String newAccessToken = jwtUtil.createToken(email, jwtProperties.getAccessTokenValidityInSeconds(), "ACCESS_TOKEN");
+        String newRefreshToken = jwtUtil.createToken(email, jwtProperties.getRefreshTokenValidityInSeconds(), "REFRESH_TOKEN");
+
+        response.addCookie(cookieUtil.createAuthCookie(newAccessToken));
+        response.addCookie(cookieUtil.createRefreshCookie(newRefreshToken));
+
+        return TokenResponse.of(newAccessToken);
     }
 
     private Optional<String> extractRefreshToken(HttpServletRequest request) {

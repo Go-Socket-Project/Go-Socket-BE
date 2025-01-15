@@ -52,12 +52,13 @@ public class JWTUtil {
      * JWT 토큰 생성
      * 주어진 이메일과 유효기간으로 새로운 JWT를 생성합니다.
      *
-     * @param email 토큰에 포함될 사용자 이메일
+     * @param email             토큰에 포함될 사용자 이메일
      * @param validityInSeconds 토큰 유효 기간 (초)
+     * @param accessToken
      * @return 생성된 JWT 문자열
      * @throws IllegalStateException 토큰 생성 중 오류 발생 시
      */
-    public String createToken(String email, long validityInSeconds) {
+    public String createToken(String email, long validityInSeconds, String accessToken) {
         Date now = new Date();
         Date validity = new Date(now.getTime() + (validityInSeconds * 1000));
 
@@ -67,6 +68,7 @@ public class JWTUtil {
                     .subject(email)
                     .issuedAt(now)
                     .expiration(validity)
+                    .claim("type", accessToken)
                     .signWith(secretKey)
                     .compact();
         } catch (JwtException e) {
@@ -82,20 +84,27 @@ public class JWTUtil {
      * @param token 검증할 JWT 문자열
      * @return 토큰이 유효하면 true, 그렇지 않으면 false
      */
-    public boolean validateToken(String token) {
+    public boolean validateToken(String token, String expectedType) {
         if (!StringUtils.hasText(token)) {
             return false;
         }
 
         try {
-            Jwts.parser()
+            var claims = Jwts.parser()
                     .verifyWith(secretKey)
                     .requireIssuer(jwtProperties.getIssuer())
                     .build()
-                    .parseSignedClaims(token);
+                    .parseSignedClaims(token)
+                    .getPayload();
 
-            Date expiration = getExpirationFromToken(token);
-            return new Date().before(expiration);
+            // 토큰 타입 검증
+            String tokenType = claims.get("type", String.class);
+            if (!expectedType.equals(tokenType)) {
+                log.warn("잘못된 토큰 타입입니다. expected: {}, actual: {}", expectedType, tokenType);
+                return false;
+            }
+
+            return new Date().before(claims.getExpiration());
         } catch (ExpiredJwtException e) {
             log.warn("만료된 JWT 토큰입니다.");
             return false;

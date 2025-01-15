@@ -49,13 +49,13 @@ public class AuthService {
         }
 
         String refreshToken = jwtUtil.createToken(member.getEmail(),
-                jwtProperties.getRefreshTokenValidityInSeconds());
+                jwtProperties.getRefreshTokenValidityInSeconds(), "ACCESS_TOKEN");
 
         Cookie refreshTokenCookie = cookieUtil.createRefreshCookie(refreshToken);
         response.addCookie(refreshTokenCookie);
 
         String accessToken = jwtUtil.createToken(member.getEmail(),
-                jwtProperties.getAccessTokenValidityInSeconds());
+                jwtProperties.getAccessTokenValidityInSeconds(), "ACCESS_TOKEN");
 
         Cookie accessTokenCookie = cookieUtil.createAuthCookie(accessToken);
         response.addCookie(accessTokenCookie);
